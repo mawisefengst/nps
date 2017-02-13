@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="">
+  <head>
+    <meta charset="utf-8">
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>npsDashboard</title>
+
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <!-- Place favicon.ico in the root directory -->
+
+    <!-- build:css styles/vendor.css -->
+    <!-- bower:css -->
+    <!-- endbower -->
+    <!-- endbuild -->
+
+    <!-- build:css styles/main.css -->
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,300,700&subset=latin,latin-ext" rel="stylesheet">
+    <link rel="stylesheet" href="styles/main.css">
+    <!-- endbuild -->
+    <style>
+        [ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .x-ng-cloak {
+              display: none !important;
+            }
+    </style>
+  </head>
+  <body>
+    <!--[if lt IE 10]>
+      <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+    <![endif]-->
+    
+    <div class="hero-unit dashboard" ng-controller="snapshotController">
+
+       <section ng-cloak class="snapshot section">  
+
+            <div class="section-row" ng-hide="hideNPS">    
+                <div class="score">
+                    <h1 class="nps {{ summary.nps | npsType }}" ng-hide="emptyState">{{summary.nps }}</h1>
+                    <h1 class="nps" ng-show="emptyState">--</h1>
+                    <label for="nps {{ summary.nps }}">Net Promoter Score</label>
+                    <div class="separator">
+                    </div>
+
+                    <div class="meta">  
+                        <span class="last-period">last {{ dateRange }}: {{ summary.nps - summary.nps_trend }}</span>  
+                        <span class="trend {{ summary.nps_trend | trendType }}" ng-hide="emptyState">    
+                            <img ng-src="{{ summary.nps_trend | trendFile }}" class="{{ summary.nps_trend | lineChartDirection }}"></img> {{ summary.nps_trend | formatTrend}}  
+                        </span>
+                    </div>    
+                </div>    
+
+                <div class="nps-histogram">
+                    <div class="graph">  
+                        <div class="responses">    
+                            <h4 class="figure">{{ summary.detractors }}</h4>    <h6>detractors</h6>  
+                        </div>  
+
+                        <div class="color-bar detractor" ng-class="colorBarValueClass(summary.percent_detractors)">    <h3 class="main figure" ng-hide="isBarShort(summary.percent_detractors)">{{ summary.percent_detractors }}<span class="percent">%</span></h3>    <span class="reaction"></span>  
+                        </div>  
+
+                        <h3 class="main figure" ng-show="isBarShort(summary.percent_detractors)">{{ summary.percent_detractors }}
+                            <span class="percent">%</span>
+                        </h3>  
+
+                        <div class="trend detractor" ng-hide="emptyState">    
+                            <img ng-src="{{ summary.detractor_trend | detractorTrendToSvgIcon }}" class="{{ summary.detractor_trend | lineChartDirection }}"></img> {{ summary.detractor_trend | formatTrend }}  
+                        </div>
+                    </div>
+
+                    <div class="graph">  
+                        <div class="responses">    <h4 class="figure">{{ summary.passives }}</h4>    <h6>passives</h6>  </div>  
+                        <div class="color-bar passive" ng-class="colorBarValueClass(summary.percent_passives)">    <h3 class="main figure" ng-hide="isBarShort(summary.percent_passives)">{{ summary.percent_passives }}<span class="percent">%</span></h3>    <span class="reaction"></span>  
+                        </div>  
+                        <h3 class="main figure" ng-show="isBarShort(summary.percent_passives)">{{ summary.percent_passives }}<span class="percent">%</span></h3>  
+                        <div class="trend passive" ng-hide="emptyState">    
+                            <img ng-src="{{ summary.passive_trend | passiveTrendToSvgIcon }}" class="{{ summary.passive_trend | lineChartDirection }}"></img> {{ summary.passive_trend | formatTrend }}  
+                        </div>
+                    </div>
+
+                    <div class="graph">  
+                        <div class="responses">    <h4 class="figure">{{ summary.promoters }}</h4>    <h6>promoters</h6>  
+                        </div>  
+
+                        <div class="color-bar promoter" ng-class="colorBarValueClass(summary.percent_promoters)">    
+                            <h3 class="main figure" ng-hide="isBarShort(summary.percent_promoters)">{{ summary.percent_promoters }}<span class="percent">%</span></h3>  
+                        </div>  
+                        <h3 class="main figure" ng-show="isBarShort(summary.percent_promoters)">{{ summary.percent_promoters }}
+                            <span class="percent">%</span>
+                        </h3>  
+                        <div class="trend promoter" ng-hide="emptyState">    
+                            <img ng-src="{{ summary.promoter_trend | promoterTrendToSvgIcon }}" class="{{ summary.promoter_trend | lineChartDirection }}"></img> {{ summary.promoter_trend | formatTrend }}  
+                        </div>
+                    </div>    
+                </div>  
+            </div> 
+
+            <div class="section-separator" ng-hide="hideNPS"></div>  
+
+            <div class="section-row response-rate-data">    
+                <div class="metric">
+                    <h2 class="value">{{ summary.responses }}</h2>
+                    <h5 class="description">Responses</h5>
+                    <div class="separator"></div>
+                    <div class="meta">  
+                        <p class="trend last-period">last {{ dateRange }}
+                            <span class="{{ summary.response_trend | trendType }}" ng-hide="emptyState">
+                                <img ng-src="{{ summary.response_trend | trendFile }}" class="{{ summary.response_trend | lineChartDirection }}"></img> {{ summary.response_trend | formatTrend }}</span>  </p>
+                    </div>    
+                </div>    
+
+                <div class="metric">
+                    <h2 class="value" ng-hide="emptyState">{{ summary.response_rate }}%</h2><h2 class="value" ng-show="emptyState">—%</h2>
+                    <h5 class="description">Online Response Rate</h5>
+                    <div class="separator"></div>
+                    <div class="meta">  
+                        <p class="trend last-period">  <span ng-hide="emptyState">last {{ dateRange }}%</span>  <span ng-show="emptyState">last {{ dateRange }}: --%</span>  <span class="{{ summary.response_rate_trend | trendType }}" ng-hide="emptyState"><img ng-src="{{ summary.response_rate_trend | trendFile }}" class="{{ summary.response_rate_trend | lineChartDirection }}"></img> {{ summary.response_rate_trend | formatTrend }}%</span>  </p>
+                    </div>   
+                 </div>   
+
+                 <div class="metric" ng-show="hasEmailNPS">
+                    <h2 class="value" ng-hide="emptyState">  {{ summary.email_response_rate }}%</h2>
+                    <h2 class="value" ng-show="emptyState">—%</h2>
+                    <h5 class="description">Offline Response Rate</h5>
+                    <div class="separator"></div>
+                    <div class="meta">  <p class="trend last-period">    <span ng-hide="emptyState">      last {{ dateRange }}: {{ summary.previous_email_response_rate }}%    </span>    <span ng-show="emptyState">      last {{ dateRange }}: --%    </span>    <span class="{{ summary.email_response_rate_trend | trendType }}"          ng-hide="emptyState">      <img ng-src="{{ summary.email_response_rate_trend | trendFile }}"           class="{{ summary.email_response_rate_trend | lineChartDirection }}">      {{ summary.email_response_rate_trend | formatTrend }}%    </span>  </p>
+                    </div>    
+                </div>  
+           
+            </div>  
+
+            <div class="section-separator"></div>    
+
+            <div class="section-row mean-score">
+                <div class="metric">  
+                    <h2 class="value {{ accountMode.toLowerCase() }}">    {{ summary.mean_score | number: 1 }}  </h2>  
+                    <h5 class="description">{{ accountMode }} Mean Score</h5>  
+                    <div class="separator"></div>  
+                    <div class="meta">    
+                        <p class="trend last-period">last {{ dateRange }}      
+                            <span class="{{ summary.mean_score_trend | trendType }}" ng-hide="emptyState">        
+                                <img ng-src="{{ summary.mean_score_trend | trendFile }}" class="{{ summary.mean_score_trend | lineChartDirection }}"></img> {{ summary.mean_score_trend | number: 1 | formatTrend }}      </span>    
+                            </p>  
+                    </div>
+                </div>
+                <div class="d3-score-histogram" ng-class="{'fade-in': fadeInHistogram}">  
+                    <snapshot-histogram    data="scoresHistogramData"    currently-selected-score="currentlySelectedScore"    set-current-score="setCurrentScore(score)"    total-responses="totalResponses">    
+                        <score-popover class="flyout" ng-style="position"></score-popover>  
+                    </snapshot-histogram>
+                </div>    
+            </div> 
+
+        </section>
+    </div>
+
+    <script type="text/ng-template" id="score-popover.html">
+
+        <div class="score-popover" ng-show="currentlySelectedScore"> 
+            <div class="responses-row"> {{ currentlySelectedScore.responses }} responses </div>
+        </div>
+
+    </script>
+   
+    
+
+    <!-- build:js scripts/vendor.js -->
+    <!-- bower:js -->
+    <script src="/bower_components/jquery/dist/jquery.js"></script>
+    <script src="/bower_components/angular/angular.js"></script>
+    <script src="/bower_components/d3/d3.js"></script>
+    <!-- endbower -->
+    <!-- endbuild -->
+    
+    <!-- build:js scripts/main.js -->
+    <script src="scripts/main.js"></script>
+    <!-- endbuild -->
+  </body>
+</html>
